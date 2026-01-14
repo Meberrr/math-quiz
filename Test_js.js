@@ -19,11 +19,13 @@ async function submitQuiz() {
 
   const url = "https://script.google.com/macros/s/AKfycbzPgRXMKqH2dKu-R2A7pczEVQ-CEdPwYsdlk4yAg_8stLE8qLsC7Ix1o-kYY0bbn4VB/exec";
 
-  await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(data),
-    mode: "no-cors"
-  });
+await fetch(url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+});
 
   alert("測驗完成！資料已送出！");
 }
@@ -38,6 +40,7 @@ function calculateScore() {
 }
 
 window.onload = () => window.startTime = Date.now();
+
 
 
 
