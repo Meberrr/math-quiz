@@ -17,7 +17,7 @@ async function submitQuiz() {
     timeSpent: (Date.now() - startTime) / 1000 + " 秒"
   };
 
-  const url = "🔹這裡貼上你的 Google Apps Script 網址🔹";
+  const url = "https://script.google.com/macros/s/AKfycbzPgRXMKqH2dKu-R2A7pczEVQ-CEdPwYsdlk4yAg_8stLE8qLsC7Ix1o-kYY0bbn4VB/exec";
 
   await fetch(url, {
     method: "POST",
@@ -38,5 +38,6 @@ function calculateScore() {
 }
 
 window.onload = () => window.startTime = Date.now();
+
 
 
