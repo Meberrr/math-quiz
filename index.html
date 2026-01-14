@@ -8,10 +8,11 @@
     h2 { color: #2a4d8f; }
     input, select { padding: 6px; margin: 6px; }
     button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #45a049; }
+    button:disabled { background-color: #aaa; cursor: not-allowed; }
+    button:hover:not(:disabled) { background-color: #45a049; }
   </style>
 
-  <!-- ✅ 非 module 版本的 Firebase -->
+  <!-- ✅ Firebase 兼容版 -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -41,13 +42,13 @@
     <li>21 × (27 ÷ 3) = <input type="number" id="Q8"></li>
     <li>(30 - 14) ÷ 4 = <input type="number" id="Q9"></li>
   </ol>
-  <button type="button" onclick="submitQuiz()">送出答案</button>
+  <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
 </form>
 
 <p id="result"></p>
 
 <script>
-  // ✅ 你的 Firebase 設定（請換成你自己的）
+  // ✅ 你的 Firebase 設定（請換成自己的）
 const firebaseConfig = {
   apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
   authDomain: "math-quiz-a0fcf.firebaseapp.com",
@@ -57,16 +58,19 @@ const firebaseConfig = {
   appId: "1:137657638927:web:b6c450f8cec9978620c37a"
 };
 
-  // ✅ 初始化 Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   async function submitQuiz() {
+    const btn = document.getElementById("submitBtn");
     const startTime = window.startTime || Date.now();
+
+    // 防止重複點擊
+    btn.disabled = true;
 
     const data = {
       class: document.getElementById("classSelect").value,
-      studentId: document.getElementById("studentId").value,
+      studentId: document.getElementById("studentId").value.trim(),
       Q1: document.getElementById("Q1").value,
       Q2: document.getElementById("Q2").value,
       Q3: document.getElementById("Q3").value,
@@ -76,27 +80,49 @@ const firebaseConfig = {
       Q7: document.getElementById("Q7").value,
       Q8: document.getElementById("Q8").value,
       Q9: document.getElementById("Q9").value,
-      score: calculateScore(),
-      timeSpent: ((Date.now() - startTime) / 1000).toFixed(2),
-      timestamp: new Date()
     };
+
+    // ✅ 計算分數與時間
+    const result = calculateScore();
+    data.correctCount = result.correctCount;
+    data.score = result.score; // 100 分制
+    data.timeSpent = ((Date.now() - startTime) / 1000).toFixed(2);
+    data.timestamp = new Date();
 
     try {
       await db.collection("quizResults").add(data);
+
+      alert("作答完成！感謝您的參與 🙌");
+
+      // 鎖定所有輸入欄位與按鈕
+      const inputs = document.querySelectorAll("input, select, button");
+      inputs.forEach(el => el.disabled = true);
+
+      // 顯示結果
       document.getElementById("result").innerHTML =
-        `<strong>✅ 已送出！</strong><br>答對：${data.score}/9 題<br>作答時間：${data.timeSpent} 秒`;
+        `<strong>✅ 已送出！</strong><br>
+         答對：${result.correctCount}/9 題<br>
+         分數：${result.score} 分<br>
+         作答時間：${data.timeSpent} 秒`;
+
     } catch (err) {
       alert("❌ 錯誤：" + err.message);
+      btn.disabled = false; // 如果失敗再啟用按鈕
     }
   }
 
+  // ✅ 將 9 題轉為 100 分制
   function calculateScore() {
     const correct = [38, 456, 792, 12, 115, 2, 255, 189, 4];
-    let score = 0;
+    let correctCount = 0;
     for (let i = 1; i <= 9; i++) {
-      if (parseInt(document.getElementById(`Q${i}`).value) === correct[i - 1]) score++;
+      if (parseInt(document.getElementById(`Q${i}`).value) === correct[i - 1]) {
+        correctCount++;
+      }
     }
-    return score;
+    // 每題約 11.11 分
+    const score = Math.round((correctCount / 9) * 100);
+    return { correctCount, score };
   }
 
   window.onload = () => window.startTime = Date.now();
