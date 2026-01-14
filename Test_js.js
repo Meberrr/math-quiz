@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ✅ 你的 Firebase 設定（改成自己的）
+// ✅ 你的 Firebase 設定（請換成自己的）
 const firebaseConfig = {
   apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
   authDomain: "math-quiz-a0fcf.firebaseapp.com",
@@ -12,16 +12,19 @@ const firebaseConfig = {
   appId: "1:137657638927:web:b6c450f8cec9978620c37a"
 };
 
-// ✅ 初始化
+// 初始化
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ 主功能
+// 註冊按鈕事件
+document.getElementById("submitBtn").addEventListener("click", submitQuiz);
+
 async function submitQuiz() {
   const startTime = window.startTime || Date.now();
+
   const data = {
     class: document.getElementById("classSelect").value,
-    studentId: document.getElementById("studentId").value,
+    studentId: document.getElementById("studentId").value || "",
     Q1: document.getElementById("Q1").value,
     Q2: document.getElementById("Q2").value,
     Q3: document.getElementById("Q3").value,
