@@ -11,6 +11,17 @@
     button:disabled { background-color: #aaa; cursor: not-allowed; }
     button:hover:not(:disabled) { background-color: #45a049; }
     .hidden { display: none; }
+
+    /* ✅ 題號與題目之間留大空格 */
+    ol { list-style-position: inside; padding-left: 0; }
+    ol li {
+      margin-bottom: 14px;
+      text-indent: -1.5em; /* 調整題號縮排 */
+    }
+    ol li::marker {
+      content: counter(list-item) ".   "; /* ← 這裡是三個全形空格（可以再加多） */
+      font-weight: bold;
+    }
   </style>
 
   <!-- ✅ Firebase 兼容版 -->
@@ -35,24 +46,24 @@
   <p><strong>自訂代號（共四碼）</strong>：生日月份 + 座號（例如：7月3號 → 0703）</p>
 
   <select id="classSelect">
-    <option value="第一關">第一關</option>
-    <option value="第二關">第二關</option>
-    <option value="第三關">第三關</option>
+    <option value="A班">A班</option>
+    <option value="B班">B班</option>
+    <option value="C班">C班</option>
   </select>
 
   <input type="text" id="studentId" placeholder="請輸入自訂代號（四碼）" />
 
   <form id="quizForm">
     <ol>
-      <li>   11 + 27 = <input type="number" id="Q1"></li>
-      <li>   2 × 12 × 19 = <input type="number" id="Q2"></li>
-      <li>   24 × 3 × 11 = <input type="number" id="Q3"></li>
-      <li>   32 ÷ 4 + 4 = <input type="number" id="Q4"></li>
-      <li>   15 ÷ 3 × 23 = <input type="number" id="Q5"></li>
-      <li>   9 × 6 ÷ 27 = <input type="number" id="Q6"></li>
-      <li>   15 × (30 - 13) = <input type="number" id="Q7"></li>
-      <li>   21 × (27 ÷ 3) = <input type="number" id="Q8"></li>
-      <li>   (30 - 14) ÷ 4 = <input type="number" id="Q9"></li>
+      <li>11 + 27 = <input type="number" id="Q1"></li>
+      <li>2 × 12 × 19 = <input type="number" id="Q2"></li>
+      <li>24 × 3 × 11 = <input type="number" id="Q3"></li>
+      <li>32 ÷ 4 + 4 = <input type="number" id="Q4"></li>
+      <li>15 ÷ 3 × 23 = <input type="number" id="Q5"></li>
+      <li>9 × 6 ÷ 27 = <input type="number" id="Q6"></li>
+      <li>15 × (30 - 13) = <input type="number" id="Q7"></li>
+      <li>21 × (27 ÷ 3) = <input type="number" id="Q8"></li>
+      <li>(30 - 14) ÷ 4 = <input type="number" id="Q9"></li>
     </ol>
     <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
   </form>
@@ -61,7 +72,7 @@
 </div>
 
 <script>
-  // ✅ Firebase 設定（請換成你的專案資料）
+  // ✅ Firebase 設定（請換成自己的）
 const firebaseConfig = {
   apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
   authDomain: "math-quiz-a0fcf.firebaseapp.com",
@@ -74,9 +85,8 @@ const firebaseConfig = {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  let selectedTestType = ""; // 用來記錄前測/後測
+  let selectedTestType = "";
 
-  // ✅ 選擇測驗階段
   function selectStage(type) {
     selectedTestType = type;
     document.getElementById("testTypeLabel").textContent = type;
@@ -91,7 +101,7 @@ const firebaseConfig = {
 
     const data = {
       testType: selectedTestType,
-      version: document.getElementById("classSelect").value,
+      class: document.getElementById("classSelect").value,
       studentId: document.getElementById("studentId").value.trim(),
       Q1: document.getElementById("Q1").value,
       Q2: document.getElementById("Q2").value,
@@ -118,7 +128,6 @@ const firebaseConfig = {
       // ✅ 鎖定所有輸入與按鈕
       document.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
 
-      // ✅ 顯示結果
       document.getElementById("result").innerHTML =
         `<strong>✅ ${selectedTestType}已送出！</strong><br>
          答對：${result.correctCount}/9 題<br>
@@ -131,7 +140,6 @@ const firebaseConfig = {
     }
   }
 
-  // ✅ 分數換算為 100 分制
   function calculateScore() {
     const correct = [38, 456, 792, 12, 115, 2, 255, 189, 4];
     let correctCount = 0;
@@ -147,4 +155,3 @@ const firebaseConfig = {
 
 </body>
 </html>
-
