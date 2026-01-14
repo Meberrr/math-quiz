@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>數學前後測問卷</title>
+  <script type="module" src="Test_js.js"></script>
   <style>
     body { font-family: "Microsoft JhengHei"; margin: 40px; background-color: #f9f9f9; }
     h2 { color: #2a4d8f; }
@@ -11,11 +12,9 @@
     button:hover { background-color: #45a049; }
   </style>
 </head>
-
 <body>
 
 <h2>數學前後測問卷</h2>
-
 <p><strong>自訂代號（共四碼）</strong>：生日月份 + 座號（例如：7月3號 → 0703）</p>
 
 <select id="classSelect">
@@ -38,12 +37,10 @@
     <li>21 × (27 ÷ 3) = <input type="number" id="Q8"></li>
     <li>(30 - 14) ÷ 4 = <input type="number" id="Q9"></li>
   </ol>
-  <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
+  <button type="button" onclick="submitQuiz()">送出答案</button>
 </form>
 
 <p id="result"></p>
-
-<script src="Test_js.js"></script>
 
 </body>
 </html>
