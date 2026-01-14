@@ -13,13 +13,13 @@
     .hidden { display: none; }
 
     /* ✅ 題號與題目之間留大空格 */
-    ol { list-style-position: inside; padding-left: 6px; }
+    ol { list-style-position: inside; padding-left: 10px; }
     ol li {
       margin-bottom: 14px;
       text-indent: -1.5em; /* 調整題號縮排 */
     }
     ol li::marker {
-      content: counter(list-item) ".   "; /* ← 這裡是三個全形空格（可以再加多） */
+      content: counter(list-item) ".  "; /* ← 這裡是三個全形空格（可以再加多） */
       font-weight: bold;
     }
 
@@ -156,5 +156,6 @@ const firebaseConfig = {
 
 </body>
 </html>
+
 
 
