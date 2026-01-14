@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>數學前後測問卷</title>
+<style>
+  body { font-family: "Microsoft JhengHei"; margin: 40px; background-color: #f9f9f9; }
+  h2 { color: #2a4d8f; }
+  input, select { padding: 6px; margin: 6px; }
+  button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+  button:hover { background-color: #45a049; }
+</style>
+</head>
+<body>
+
+<h2>數學前後測問卷</h2>
+
+<p><strong>自訂代號(共四碼)/strong> 生日月份 + 座號（例如：7月3號 → 0703）</p>
+<select id="classSelect">
+  <option value="A班">A班</option>
+  <option value="B班">B班</option>
+  <option value="C班">C班</option>
+</select>
+<input type="text" id="studentId" placeholder="請輸入自訂代號(四碼)>
+
+<form id="quizForm">
+  <ol>
+    <li>11 + 27 = <input type="number" id="Q1"></li>
+    <li>2 × 12 × 19 = <input type="number" id="Q2"></li>
+    <li>24 × 3 × 11 = <input type="number" id="Q3"></li>
+    <li>32 ÷ 4 + 4 = <input type="number" id="Q4"></li>
+    <li>15 ÷ 3 × 23 = <input type="number" id="Q5"></li>
+    <li>9 × 6 ÷ 27 = <input type="number" id="Q6"></li>
+    <li>15 × (30 - 13) = <input type="number" id="Q7"></li>
+    <li>21 × (27 ÷ 3) = <input type="number" id="Q8"></li>
+    <li>(30 - 14) ÷ 4 = <input type="number" id="Q9"></li>
+  </ol>
+  <button type="button" id="submitBtn">送出答案</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+const startTime = Date.now();
+const scriptURL = "🔹在這裡貼上你的 Google Apps Script 網址🔹";
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  const endTime = Date.now();
+  const timeSpent = ((endTime - startTime) / 1000).toFixed(2);
+  const studentId = document.getElementById("studentId").value.trim();
+  const className = document.getElementById("classSelect").value;
+  if (!studentId) return alert("請輸入代號！");
+
+  const answers = {
+    Q1: +document.getElementById("Q1").value,
+    Q2: +document.getElementById("Q2").value,
+    Q3: +document.getElementById("Q3").value,
+    Q4: +document.getElementById("Q4").value,
+    Q5: +document.getElementById("Q5").value,
+    Q6: +document.getElementById("Q6").value,
+    Q7: +document.getElementById("Q7").value,
+    Q8: +document.getElementById("Q8").value,
+    Q9: +document.getElementById("Q9").value
+  };
+
+  const correctAnswers = {Q1:38, Q2:456, Q3:792, Q4:12, Q5:115, Q6:2, Q7:255, Q8:189, Q9:4};
+  let score = 0;
+  for (let key in answers) {
+    if (answers[key] === correctAnswers[key]) score++;
+  }
+
+  const data = {
+    class: className,
+    studentId: studentId,
+    ...answers,
+    score: score,
+    timeSpent: timeSpent
+  };
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(() => {
+    document.getElementById("result").innerHTML =
+      `<strong>已送出！</strong><br>答對：${score}/9 題<br>作答時間：${timeSpent} 秒`;
+  })
+  .catch(err => alert("資料傳送失敗：" + err));
+});
+</script>
+
+</body>
+</html>
