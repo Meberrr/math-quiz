@@ -13,15 +13,21 @@
     .hidden { display: none; }
 
     /* ✅ 題號與題目之間留大空格 */
-    ol { list-style-position: inside; padding-left: 0; }
-    ol li {
-      margin-bottom: 14px;
-      text-indent: -1.5em; /* 調整題號縮排 */
-    }
-    ol li::marker {
-      content: counter(list-item) ".   "; /* ← 這裡是三個全形空格（可以再加多） */
-      font-weight: bold;
-    }
+<form id="quizForm">
+  <table class="quiz-table">
+    <tr><td class="qnum">1.</td><td>11 + 27 =</td><td><input type="number" id="Q1"></td></tr>
+    <tr><td class="qnum">2.</td><td>2 × 12 × 19 =</td><td><input type="number" id="Q2"></td></tr>
+    <tr><td class="qnum">3.</td><td>24 × 3 × 11 =</td><td><input type="number" id="Q3"></td></tr>
+    <tr><td class="qnum">4.</td><td>32 ÷ 4 + 4 =</td><td><input type="number" id="Q4"></td></tr>
+    <tr><td class="qnum">5.</td><td>15 ÷ 3 × 23 =</td><td><input type="number" id="Q5"></td></tr>
+    <tr><td class="qnum">6.</td><td>9 × 6 ÷ 27 =</td><td><input type="number" id="Q6"></td></tr>
+    <tr><td class="qnum">7.</td><td>15 × (30 - 13) =</td><td><input type="number" id="Q7"></td></tr>
+    <tr><td class="qnum">8.</td><td>21 × (27 ÷ 3) =</td><td><input type="number" id="Q8"></td></tr>
+    <tr><td class="qnum">9.</td><td>(30 - 14) ÷ 4 =</td><td><input type="number" id="Q9"></td></tr>
+  </table>
+  <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
+</form>
+
   </style>
 
   <!-- ✅ Firebase 兼容版 -->
@@ -155,3 +161,4 @@ const firebaseConfig = {
 
 </body>
 </html>
+
