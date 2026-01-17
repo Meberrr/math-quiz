@@ -6,26 +6,32 @@
   <style>
     body { font-family: "Microsoft JhengHei"; margin: 40px; background-color: #f9f9f9; }
     h2 { color: #2a4d8f; }
-    input, select { padding: 6px; margin: 6px; }
+    input, select, textarea { padding: 6px; margin: 6px; font-size: 15px; }
     button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
     button:disabled { background-color: #aaa; cursor: not-allowed; }
     button:hover:not(:disabled) { background-color: #45a049; }
     .hidden { display: none; }
 
-    /* ✅ 題號與題目之間留大空格 */
     ol { list-style-position: inside; padding-left: 20px; }
-    ol li {
-      margin-bottom: 14px;
-      text-indent: -1.5em; /* 調整題號縮排 */
-    }
-    ol li::marker {
-      content: counter(list-item) ". "; /* ← 這裡是三個全形空格（可以再加多） */
-      font-weight: bold;
-    }
+    ol li { margin-bottom: 14px; text-indent: -1.5em; }
+    ol li::marker { content: counter(list-item) ". "; font-weight: bold; }
 
+    .feedback-section {
+      margin-top: 25px;
+      padding: 10px 15px;
+      background-color: #eef3ff;
+      border-radius: 10px;
+      border: 1px solid #cdd5ef;
+    }
+    textarea {
+      width: 90%;
+      height: 80px;
+      resize: none;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
   </style>
 
-  <!-- ✅ Firebase 兼容版 -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -34,19 +40,19 @@
 
 <h2>數學前後測問卷</h2>
 
-<!-- ✅ 新增「選擇測驗階段」 -->
+<!--  選擇階段 -->
 <div id="stageSelectArea">
   <p><strong>請選擇目前進行的測驗階段：</strong></p>
   <button onclick="selectStage('前測')">前測</button>
   <button onclick="selectStage('後測')">後測</button>
 </div>
 
-<!-- ✅ 主問卷區 -->
+<!--  問卷主體 -->
 <div id="quizArea" class="hidden">
   <p><strong>測驗階段：</strong><span id="testTypeLabel"></span></p>
   <p><strong>自訂代號（共四碼）</strong>：生日月份 + 座號（例如：7月3號 → 0703）</p>
 
-  <p><strong>請選擇測驗的關卡</p>
+  <p><strong>請選擇測驗的關卡：</strong></p>
   <select id="classSelect">
     <option value="第一關">第一關</option>
     <option value="第二關">第二關</option>
@@ -70,24 +76,37 @@
     <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
   </form>
 
+  <!--  第二階段（後測送出後才出現） -->
+  <div id="feedbackArea" class="feedback-section hidden">
+    <p><strong>請問您是否有通關？</strong></p>
+    <label><input type="radio" name="cleared" value="是"> 是</label>
+    <label><input type="radio" name="cleared" value="否"> 否</label>
+
+    <p><strong>其他建議與回饋：</strong></p>
+    <textarea id="feedback" placeholder="請輸入您的意見或建議..."></textarea><br>
+
+    <button type="button" id="finalSubmitBtn" onclick="submitFeedback()">送出回饋</button>
+  </div>
+
   <p id="result"></p>
 </div>
 
 <script>
-  // ✅ Firebase 設定（請換成自己的）
-const firebaseConfig = {
-  apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
-  authDomain: "math-quiz-a0fcf.firebaseapp.com",
-  projectId: "math-quiz-a0fcf",
-  storageBucket: "math-quiz-a0fcf.firebasestorage.app",
-  messagingSenderId: "137657638927",
-  appId: "1:137657638927:web:b6c450f8cec9978620c37a"
-};
+  //  Firebase 設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
+    authDomain: "math-quiz-a0fcf.firebaseapp.com",
+    projectId: "math-quiz-a0fcf",
+    storageBucket: "math-quiz-a0fcf.firebasestorage.app",
+    messagingSenderId: "137657638927",
+    appId: "1:137657638927:web:b6c450f8cec9978620c37a"
+  };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   let selectedTestType = "";
+  let docId = null; // 暫存 Firebase 文件 ID
 
   function selectStage(type) {
     selectedTestType = type;
@@ -121,24 +140,55 @@ const firebaseConfig = {
     data.score = result.score;
     data.timeSpent = ((Date.now() - window.startTime) / 1000).toFixed(2);
     data.timestamp = new Date();
+    data.cleared = "";
+    data.feedback = "";
 
     try {
-      await db.collection("quizResults").add(data);
+      const docRef = await db.collection("quizResults").add(data);
+      docId = docRef.id;
 
       alert(`作答完成！感謝您的參與（${selectedTestType}）🙌`);
 
-      // ✅ 鎖定所有輸入與按鈕
-      document.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+      //  前測直接結束，後測進入回饋階段
+      if (selectedTestType === "後測") {
+        document.getElementById("feedbackArea").classList.remove("hidden");
+      }
 
       document.getElementById("result").innerHTML =
-        `<strong>✅ ${selectedTestType}已送出！</strong><br>
+        `<strong> ${selectedTestType}題目已送出！</strong><br>
          答對：${result.correctCount}/9 題<br>
          分數：${result.score} 分<br>
          作答時間：${data.timeSpent} 秒`;
 
+      //  鎖定題目輸入
+      document.querySelectorAll("input[type='number']").forEach(el => el.disabled = true);
+      btn.disabled = true;
+
     } catch (err) {
-      alert("❌ 錯誤：" + err.message);
+      alert(" 錯誤：" + err.message);
       btn.disabled = false;
+    }
+  }
+
+  async function submitFeedback() {
+    const cleared = document.querySelector('input[name="cleared"]:checked');
+    const feedback = document.getElementById("feedback").value.trim();
+
+    if (!cleared && feedback === "") {
+      alert("請至少填寫是否通關或提供意見！");
+      return;
+    }
+
+    try {
+      await db.collection("quizResults").doc(docId).update({
+        cleared: cleared ? cleared.value : "未作答",
+        feedback: feedback
+      });
+
+      alert("回饋已送出，感謝您的參與！");
+      document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = true);
+    } catch (err) {
+      alert(" 回饋上傳失敗：" + err.message);
     }
   }
 
@@ -157,9 +207,3 @@ const firebaseConfig = {
 
 </body>
 </html>
-
-
-
-
-
-
