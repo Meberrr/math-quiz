@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>數學前後測問卷</title>
   <style>
-    body { font-family: "Microsoft JhengHei"; margin: 40px; background-color: #f9f9f9; }
-    h2 { color: #2a4d8f; }
+    body { font-family: "Microsoft JhengHei"; margin: 40px; background-color: #f9f9f9; text-align: left; }
+    h2 { color: #2a4d8f; text-align: left; }
     input, select, textarea { padding: 6px; margin: 6px; font-size: 15px; }
     button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
     button:disabled { background-color: #aaa; cursor: not-allowed; }
@@ -30,8 +30,21 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
+    /* ✅ 感謝畫面樣式 */
+    #thankYouScreen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+      text-align: center;
+      font-size: 28px;
+      color: #2a4d8f;
+      font-weight: bold;
+    }
   </style>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -40,14 +53,14 @@
 
 <h2>數學前後測問卷</h2>
 
-<!--  選擇階段 -->
+<!-- ✅ 選擇階段 -->
 <div id="stageSelectArea">
   <p><strong>請選擇目前進行的測驗階段：</strong></p>
   <button onclick="selectStage('前測')">前測</button>
   <button onclick="selectStage('後測')">後測</button>
 </div>
 
-<!--  問卷主體 -->
+<!-- ✅ 問卷主體 -->
 <div id="quizArea" class="hidden">
   <p><strong>測驗階段：</strong><span id="testTypeLabel"></span></p>
   <p><strong>自訂代號（共四碼）</strong>：生日月份 + 座號（例如：7月3號 → 0703）</p>
@@ -76,13 +89,13 @@
     <button type="button" id="submitBtn" onclick="submitQuiz()">送出答案</button>
   </form>
 
-  <!--  第二階段（後測送出後才出現） -->
+  <!-- ✅ 第二階段（後測送出後才出現） -->
   <div id="feedbackArea" class="feedback-section hidden">
-    <p><strong>請問您是否有通關？</strong></p>
+    <p><strong>請問您是否有通關？（必填）</strong></p>
     <label><input type="radio" name="cleared" value="是"> 是</label>
     <label><input type="radio" name="cleared" value="否"> 否</label>
 
-    <p><strong>其他建議與回饋：</strong></p>
+    <p><strong>其他建議與回饋（選填）：</strong></p>
     <textarea id="feedback" placeholder="請輸入您的意見或建議..."></textarea><br>
 
     <button type="button" id="finalSubmitBtn" onclick="submitFeedback()">送出回饋</button>
@@ -91,8 +104,13 @@
   <p id="result"></p>
 </div>
 
+<!-- ✅ 感謝畫面 -->
+<div id="thankYouScreen" class="hidden">
+  感謝配合施測！請稍等其他同學～
+</div>
+
 <script>
-  //  Firebase 設定
+  // ✅ Firebase 設定
   const firebaseConfig = {
     apiKey: "AIzaSyD9LY_TmhTJjEbtWkYLX9OsqTCZKYafjPg",
     authDomain: "math-quiz-a0fcf.firebaseapp.com",
@@ -106,7 +124,7 @@
   const db = firebase.firestore();
 
   let selectedTestType = "";
-  let docId = null; // 暫存 Firebase 文件 ID
+  let docId = null;
 
   function selectStage(type) {
     selectedTestType = type;
@@ -149,23 +167,17 @@
 
       alert(`作答完成！感謝您的參與（${selectedTestType}）🙌`);
 
-      //  前測直接結束，後測進入回饋階段
       if (selectedTestType === "後測") {
         document.getElementById("feedbackArea").classList.remove("hidden");
       }
 
       document.getElementById("result").innerHTML =
-        `<strong> ${selectedTestType}題目已送出！</strong><br>
-         答對：${result.correctCount}/9 題<br>
-         分數：${result.score} 分<br>
-         作答時間：${data.timeSpent} 秒`;
+        `<strong>✅ ${selectedTestType}資料已送出！</strong>`;
 
-      //  鎖定題目輸入
       document.querySelectorAll("input[type='number']").forEach(el => el.disabled = true);
-      btn.disabled = true;
 
     } catch (err) {
-      alert(" 錯誤：" + err.message);
+      alert("❌ 錯誤：" + err.message);
       btn.disabled = false;
     }
   }
@@ -174,21 +186,26 @@
     const cleared = document.querySelector('input[name="cleared"]:checked');
     const feedback = document.getElementById("feedback").value.trim();
 
-    if (!cleared && feedback === "") {
-      alert("請至少填寫是否通關！");
+    if (!cleared) {
+      alert("請先勾選是否通關！");
       return;
     }
 
     try {
       await db.collection("quizResults").doc(docId).update({
-        cleared: cleared ? cleared.value : "未作答",
+        cleared: cleared.value,
         feedback: feedback
       });
 
-      alert("回饋已送出，感謝您的參與！");
-      document.querySelectorAll("input, textarea, button").forEach(el => el.disabled = true);
+      // ✅ 送出後整頁變感謝畫面
+      document.body.innerHTML = `
+        <div id="thankYouScreen">
+          感謝配合施測！請稍等其他同學～
+        </div>
+      `;
+
     } catch (err) {
-      alert(" 回饋上傳失敗：" + err.message);
+      alert("❌ 回饋上傳失敗：" + err.message);
     }
   }
 
@@ -207,4 +224,3 @@
 
 </body>
 </html>
-
