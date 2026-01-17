@@ -30,18 +30,6 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
-    /* ✅ 感謝畫面樣式 */
-    #thankYouScreen {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 80vh;
-      text-align: center;
-      font-size: 28px;
-      color: #2a4d8f;
-      font-weight: bold;
-    }
   </style>
 
   <!-- Firebase -->
@@ -102,11 +90,6 @@
   </div>
 
   <p id="result"></p>
-</div>
-
-<!-- ✅ 感謝畫面 -->
-<div id="thankYouScreen" class="hidden">
-  感謝配合施測！請稍等其他同學～
 </div>
 
 <script>
@@ -197,9 +180,17 @@
         feedback: feedback
       });
 
-      // ✅ 送出後整頁變感謝畫面
+      // ✅ 完全重寫 body，生成感謝畫面（不會閃現）
       document.body.innerHTML = `
-        <div id="thankYouScreen">
+        <div style="
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          height:80vh;
+          font-size:28px;
+          font-weight:bold;
+          color:#2a4d8f;
+          text-align:center;">
           感謝配合施測！請稍等其他同學～
         </div>
       `;
